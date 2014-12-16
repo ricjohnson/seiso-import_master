@@ -1,0 +1,9 @@
+%YAML 1.1
+---
+host: seiso.example.com
+port: 443
+use_ssl: true
+ignore_cert: false
+username: some_username
+password: some_p@ssword
+---

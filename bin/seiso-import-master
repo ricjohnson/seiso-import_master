@@ -1,0 +1,33 @@
+#!/usr/bin/env ruby
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+require 'optparse'
+require 'seiso/import_master'
+require 'yaml'
+
+# Imports Seiso data master files into Seiso.
+#
+# Author:: Willie Wheeler (mailto:wwheeler@expedia.com)
+# Copyright:: Copyright (c) 2014-2015 Expedia, Inc.
+# License:: Apache 2.0
+
+options = {}
+option_parser = OptionParser.new do |opts|
+  executable_name = File.basename $PROGRAM_NAME
+  opts.banner = "Import one or more Seiso data master files into Seiso.
+
+Usage: #{executable_name} [options] master_file ..."
+  opts.on("-f FORMAT", "--format FORMAT", "Document format, either 'json' (default) or 'yaml'") do |format|
+    options[:format] = format
+  end
+end
+
+option_parser.parse!
+files = ARGV
+
+abort "Error: You must supply a master file.\n\n#{option_parser.help}" if files.empty?
+
+settings = YAML.load_file "#{Dir.home}/.seiso-importers/seiso.yml"
+importer = Seiso::ImportMaster.new settings
+importer.import_files files
