@@ -6,7 +6,7 @@
 
 Imports Seiso data master files into Seiso.
 
-See [Manage Your Service Data with GitHub, Jenkins & Seiso](http://seiso.io/guides/manage-your-service-data-with-github-jenkins-seiso/) for more details on the approach.
+See [Manage Your Service Data with GitHub, Jenkins & Seiso](http://seiso.io/guides/manage-your-service-data-with-github-jenkins-seiso/) for more details on the overall approach.
 
 See [Seiso Data Master Schemas](http://seiso.io/docs/current/user-manual/sdm-schemas/) for the data master schemas.
 
