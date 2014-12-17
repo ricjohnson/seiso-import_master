@@ -92,6 +92,7 @@ module Seiso
       all_children = []
       parents.each do |p|
         children = p[child_prop]
+        next if children.nil?
         children.each { |c| c[parent_prop] = p[parent_key] }
         all_children.push(*children)
         p.delete child_prop
