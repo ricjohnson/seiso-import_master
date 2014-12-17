@@ -25,9 +25,11 @@ end
 
 option_parser.parse!
 files = ARGV
-
 abort "Error: You must supply a master file.\n\n#{option_parser.help}" if files.empty?
+
+format = options[:format] || 'json'
+puts "Using #{format} format"
 
 settings = YAML.load_file "#{Dir.home}/.seiso-importers/seiso.yml"
 importer = Seiso::ImportMaster.new settings
-importer.import_files files
+importer.import_files(files, format)

@@ -4,7 +4,7 @@ $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
 
 Gem::Specification.new do |spec|
   spec.name          = "seiso-import_master"
-  spec.version       = "0.0.2.SNAPSHOT"
+  spec.version       = "0.0.2"
   spec.authors       = ["Willie Wheeler"]
   spec.email         = ["wwheeler@expedia.com"]
   spec.summary       = "Imports Seiso data master files into Seiso."

@@ -36,7 +36,7 @@ module Seiso
       loop do
         file = files.pop
         puts "Processing #{file}"
-        import_file file
+        import_file(file, format)
         break if files.empty?
       end
     end
