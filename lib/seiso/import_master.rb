@@ -13,7 +13,6 @@ module Seiso
   # Author:: Willie Wheeler (mailto:wwheeler@expedia.com)
   # Copyright:: Copyright (c) 2014-2015 Expedia, Inc.
   # License:: Apache 2.0
-  
   class ImportMaster
     
     # Initializes the importer with a Seiso connector.

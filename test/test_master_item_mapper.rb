@@ -1,5 +1,5 @@
-require 'seiso/import_master/master_item_mapper'
 require 'minitest/autorun'
+require 'seiso/import_master/master_item_mapper'
 
 # Author:: Willie Wheeler (mailto:wwheeler@expedia.com)
 # Copyright:: Copyright (c) 2014-2015 Expedia, Inc.
@@ -13,7 +13,7 @@ class TestMasterItemMapper < MiniTest::Unit::TestCase
         { "foo" => "bar" }
       end
     end
-    @mapper = Seiso::MasterItemMapper.new link_factory
+    @mapper = Seiso::ImportMaster::MasterItemMapper.new link_factory
   end
 
   def test_map_all_illegal_type
