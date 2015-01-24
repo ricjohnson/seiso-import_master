@@ -8,7 +8,7 @@ require 'yaml'
 
 # Imports Seiso data master files into Seiso.
 #
-# Author:: Willie Wheeler (mailto:wwheeler@expedia.com)
+# Author:: Willie Wheeler
 # Copyright:: Copyright (c) 2014-2015 Expedia, Inc.
 # License:: Apache 2.0
 
@@ -18,18 +18,34 @@ option_parser = OptionParser.new do |opts|
   opts.banner = "Import one or more Seiso data master files into Seiso.
 
 Usage: #{executable_name} [options] master_file ..."
+  options[:seiso_settings_path] = "#{Dir.home}/.seiso-importers/seiso.yml"
+  opts.on("--seiso SEISO_SETTINGS_PATH", "Path to Seiso API settings file") do |path|
+    options[:seiso_settings_path] = path
+  end
+
+  options[:format] = 'json'
   opts.on("-f FORMAT", "--format FORMAT", "Document format, either 'json' (default) or 'yaml'") do |format|
     options[:format] = format
   end
+  
+  opts.on("-h", "--help", "Display this screen") do
+    puts opts
+    exit
+  end
 end
 
-option_parser.parse!
+begin
+  option_parser.parse!
+rescue OptionParser::InvalidOption => e
+  abort "Invalid option.\n\n#{option_parser.help}"
+end
+
+puts "Using: #{options[:seiso_settings_path]}"
+puts "Using: format=#{options[:format]}"
+
 files = ARGV
 abort "Error: You must supply a master file.\n\n#{option_parser.help}" if files.empty?
 
-format = options[:format] || 'json'
-puts "Using #{format} format"
-
-settings = YAML.load_file "#{Dir.home}/.seiso-importers/seiso.yml"
+settings = YAML.load_file(options[:seiso_settings_path])
 importer = Seiso::ImportMaster.new settings
-importer.import_files(files, format)
+importer.import_files(files, options[:format])

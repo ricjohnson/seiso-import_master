@@ -1,0 +1,2 @@
+gem build seiso-import_master.gemspec
+gem install seiso-import_master-*.gem

@@ -20,9 +20,9 @@ module Seiso
       @seiso = Seiso::Connector.new seiso_settings
       
       # TODO Inject dependencies?
-      @uri_factory = Seiso::UriFactory.new @seiso.base_uri
-      @link_factory = Seiso::LinkFactory.new @uri_factory
-      @mapper = Seiso::MasterItemMapper.new @link_factory
+      @uri_factory = Seiso::ImportMaster::UriFactory.new @seiso.base_uri
+      @link_factory = Seiso::ImportMaster::LinkFactory.new @uri_factory
+      @mapper = Seiso::ImportMaster::MasterItemMapper.new @link_factory
       
       @loaders = {
         'json' => ->(file) { JSON.parse(IO.read(file)) },
