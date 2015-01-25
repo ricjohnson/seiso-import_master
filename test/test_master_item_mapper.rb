@@ -8,12 +8,7 @@ require 'seiso/import_master/master_item_mapper'
 class TestMasterItemMapper < MiniTest::Unit::TestCase
 
   def setup
-    link_factory = Class.new do
-      def self.link(type, key_name, key_value)
-        { "foo" => "bar" }
-      end
-    end
-    @mapper = Seiso::ImportMaster::MasterItemMapper.new link_factory
+    @mapper = Seiso::ImportMaster::MasterItemMapper.new
   end
 
   def test_map_all_illegal_type

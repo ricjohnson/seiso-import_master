@@ -1,9 +1,7 @@
 require "json"
 require "seiso/connector"
 require "yaml"
-require_relative "import_master/link_factory"
 require_relative "import_master/master_item_mapper"
-require_relative "import_master/uri_factory"
 
 # Seiso namespace module
 module Seiso
@@ -17,19 +15,26 @@ module Seiso
     
     # Initializes the importer with a Seiso connector.
     def initialize(seiso_settings)
-      @seiso = Seiso::Connector.new seiso_settings
-      
-      # TODO Inject dependencies?
-      @uri_factory = Seiso::ImportMaster::UriFactory.new @seiso.base_uri
-      @link_factory = Seiso::ImportMaster::LinkFactory.new @uri_factory
-      @mapper = Seiso::ImportMaster::MasterItemMapper.new @link_factory
-      
+      @seiso = Seiso::Connector.new(seiso_settings)
+      @mapper = Seiso::ImportMaster::MasterItemMapper.new
       @loaders = {
         'json' => ->(file) { JSON.parse(IO.read(file)) },
         'yaml' => ->(file) { YAML.load_file file }
       }
     end
 
+    def seiso
+      @seiso
+    end
+
+    def mapper
+      @mapper
+    end
+
+    def loaders
+      @loaders
+    end
+    
     # Imports a list of master files in order. Legal formats are 'json' (default) and 'yaml'.
     def import_files(files, format = 'json')
       loop do
@@ -42,7 +47,7 @@ module Seiso
     
     # Imports a data master file. Legal formats are 'json' (default) and 'yaml'.
     def import_file(file, format = 'json')
-      loader = @loaders[format]
+      loader = loaders[format]
       raise ArgumentError, "Illegal format: #{format}" if loader.nil?
       doc = loader.call(file)
       import_doc doc
@@ -66,8 +71,8 @@ module Seiso
     private
     
     def do_import_items(type, items)
-      seiso_items = @mapper.map_all(type, items)
-      @seiso.put_items(type, seiso_items)
+      seiso_items = mapper.map_all(type, items)
+      seiso.post_items(type, seiso_items)
     end
     
     # Imports the nodes, along with their associated IP addresses.

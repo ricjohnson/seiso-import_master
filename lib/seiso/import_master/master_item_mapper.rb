@@ -3,13 +3,12 @@ module Seiso
 
     # Maps the data master format to the Seiso API format.
     #
-    # Author:: Willie Wheeler (mailto:wwheeler@expedia.com)
+    # Author:: Willie Wheeler
     # Copyright:: Copyright (c) 2014-2015 Expedia, Inc.
     # License:: Apache 2.0
     class MasterItemMapper
     
-      def initialize(link_factory)
-        @link_factory = link_factory
+      def initialize
         @mappers = {
           'data-centers' => data_center_mapper,
           'environments' => environment_mapper,
@@ -50,12 +49,6 @@ module Seiso
       
       private
       
-      # Returns a link for the specified item, or nil if key_value is nil.
-      def link_for(type, key_name, key_value)
-        # Do nil check here (even though link factory does it too) since the unit test requires this behavior.
-        return key_value.nil? ? nil : @link_factory.link(type, key_name, key_value)
-      end
-      
       # Returns a mapper lambda for the specified type.
       def mapper_for(type)
         mapper = @mappers[type]
@@ -63,18 +56,16 @@ module Seiso
         mapper
       end
       
-      # Returns a mapper lambda.
       def data_center_mapper
         ->(dc) {
           {
             'key' => dc['key'],
             'name' => dc['name'],
-            'region' => link_for('regions', 'key', dc['region'])
+            'region' => { 'key' => dc['region'] }
           }
         }
       end
       
-      # Returns a mapper lambda.
       def environment_mapper
         ->(e) {
           {
@@ -89,18 +80,16 @@ module Seiso
         }
       end
       
-      # Returns a mapper lambda.
       def health_status_mapper
         ->(hs) {
           {
             'key' => hs['key'],
             'name' => hs['name'],
-            'statusType' => link_for('status-types', 'key', hs['statusType'])
+            'statusType' => { 'key' => hs['statusType'] }
           }
         }
       end
       
-      # Returns a mapper lambda.
       def infrastructure_provider_mapper
         ->(ip) {
           {
@@ -110,32 +99,33 @@ module Seiso
         }
       end
       
-      # Returns a mapper lambda.
       def ip_address_role_mapper
         # Suppressing IP addresses since we don't import those from master files.
         ->(r) {
           {
-            'serviceInstance' => link_for('service-instances', 'key', r['serviceInstance']),
+            'serviceInstance' => { 'key' => r['serviceInstance'] },
             'name' => r['name'],
             'description' => r['description']
           }
         }
       end
       
-      # Returns a mapper lambda.
       def load_balancer_mapper
         ->(lb) {
-          {
+          seiso_lb = {
             'name' => lb['name'],
             'type' => lb['type'],
             'ipAddress' => lb['ipAddress'],
-            'dataCenter' => link_for('data-centers', 'key', lb['dataCenter']),
             'apiUrl' => lb['apiUrl']
           }
+          
+          dc = lb['dataCenter']
+          seiso_lb['dataCenter'] = { 'key' => dc } unless dc.nil?
+          
+          seiso_lb
         }
       end
       
-      # Returns a mapper lambda.
       def machine_mapper
         ->(m) {
           {
@@ -151,88 +141,75 @@ module Seiso
         }
       end
       
-      # Returns a mapper lambda.
       def node_mapper
         ->(n) {
-          service_instance = n['serviceInstance']
-          ip_addresses = n['ipAddresses']
-          si_ref = link_for('service-instances', 'key', service_instance)
-          
-          result = {
+          seiso_node = {
             'name' => n['name'],
-            'serviceInstance' => si_ref,
-            'machine' => link_for('machines', 'name', n['machine'])
+            'serviceInstance' => { 'key' => n['serviceInstance'] }
           }
-          
-=begin
-      if ip_addresses
-        result['ipAddresses'] = []
-        ip_addresses.each do |ip|
-          role_name = ip['ipAddressRole']
-          result['ipAddresses'] << {
-            'ipAddressRole' => @link_factory.ip_address_role_link(service_instance, role_name),
-            'ipAddress' => ip['ipAddress']
-          }
-        end
-      end
-=end
-        
-          result
+
+          machine = n['machine']
+          seiso_node['machine'] = { 'name' => machine } unless machine.nil?
+
+          seiso_node
         }
       end
       
-      # Returns a mapper lambda.
       def node_ip_address_mapper
         # Currently suppressing rotation status and endpoints since we don't import those from master files
         ->(nip) {
           {
-            'node' => link_for('nodes', 'name', nip['node']),
-            'ipAddressRole' => link_for('ip-address-roles', 'name', nip['ipAddressRole']),
+            'node' => { 'name' => nip['node'] },
+            'ipAddressRole' => { 'name' => nip['ipAddressRole'] },
             'ipAddress' => nip['ipAddress']
           }
         }
       end
       
-      # Returns a mapper lambda.
       def region_mapper
         ->(r) {
           {
             'key' => r['key'],
             'name' => r['name'],
             'regionKey' => r['regionKey'],
-            'infrastructureProvider' => link_for('infrastructure-providers', 'key', r['infrastructureProvider'])
+            'infrastructureProvider' => { 'key' => r['infrastructureProvider'] }
           }
         }
       end
       
-      # Returns a mapper lambda.
       def rotation_status_mapper
         ->(rs) {
           {
             'key' => rs['key'],
             'name' => rs['name'],
-            'statusType' => link_for('status-types', 'key', rs['statusType'])
+            'statusType' => { 'key' => rs['statusType'] }
           }
         }
       end
       
-      # Returns a mapper lambda.
       def service_mapper
         ->(s) {
-          {
+          seiso_service = {
             'key' => s['key'],
             'name' => s['name'],
             'description' => s['description'],
-            'group' => link_for('service-groups', 'key', s['group']),
-            'type' => link_for('service-types', 'key', s['type']),
-            'owner' => link_for('people', 'username', s['owner']),
             'platform' => s['platform'],
             'scmRepository' => s['scmRepository']
           }
+
+          group = s['group']
+          seiso_service['group'] = { 'key' => group } unless group.nil?
+
+          type = s['type']
+          seiso_service['type'] = { 'key' => type } unless type.nil?
+
+          owner = s['owner']
+          seiso_service['owner'] = { 'username' => owner } unless owner.nil?
+
+          seiso_service
         }
       end
       
-      # Returns a mapper lambda.
       def service_group_mapper
         ->(sg) {
           {
@@ -242,20 +219,17 @@ module Seiso
         }
       end
       
-      # Returns a mapper lambda.
       def service_instance_mapper
         ->(si) {
           key = si['key']
           ip_address_roles = si['ipAddressRoles']
           ports = si['ports']
           
-          result = {
+          seiso_si = {
             'key' => key,
-            'service' => link_for('services', 'key', si['service']),
-            'environment' => link_for('environments', 'key', si['environment']),
-            'dataCenter' => link_for('data-centers', 'key', si['dataCenter']),
+            'service' => { 'key' => si['service'] },
+            'environment' => { 'key' => si['environment'] },
             'loadBalanced' => si['loadBalanced'],
-            'loadBalancer' => link_for('loadBalancer', 'name', si['loadBalancer']),
             'minCapacityDeploy' => si['minCapacityDeploy'],
             'minCapacityOps' => si['minCapacityOps'],
             
@@ -265,42 +239,22 @@ module Seiso
             # FIXME Deprecated. This is the old name for the minCapacityOps field.
             'requiredCapacity' => si['minCapacityOps']
           }
-          
-=begin
-      if ip_address_roles
-        result['ipAddressRoles'] = []
-        ip_address_roles.each do |role|
-          result['ipAddressRoles'] << {
-            'serviceInstance' => link_for('service-instances', 'key', key),
-            'name' => role['name'],
-            'description' => role['description']
-          }
-        end
-      end
 
-      if ports
-        result['ports'] = []
-        ports.each do |port|
-          result['ports'] << {
-            'serviceInstance' => link_for('service-instances', 'key', key),
-            'number' => port['number'],
-            'protocol' => port['protocol'],
-            'description' => port['description']
-          }
-        end
-      end
-=end
-        
-          result
+          data_center = si['dataCenter']
+          seiso_si['dataCenter'] = { 'key' => data_center } unless data_center.nil?
+          
+          load_balancer = si['loadBalancer']
+          seiso_si['loadBalancer'] = { 'name' => load_balancer } unless load_balancer.nil?
+
+          seiso_si
         }
       end
       
-      # Returns a mapper lambda.
       def service_instance_port_mapper
         # Suppressing endpoints since we don't import those from master files.
         ->(p) {
           {
-            'serviceInstance' => link_for('service-instances', 'key', p['serviceInstance']),
+            'serviceInstance' => { 'key' => p['serviceInstance'] },
             'number' => p['number'],
             'protocol' => p['protocol'],
             'description' => p['description']
@@ -308,7 +262,6 @@ module Seiso
         }
       end
       
-      # Returns a mapper lambda.
       def service_type_mapper
         ->(st) {
           {
@@ -318,7 +271,6 @@ module Seiso
         }
       end
       
-      # Returns a mapper lambda.
       def status_type_mapper
         ->(st) {
           {
